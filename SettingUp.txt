@@ -1,0 +1,293 @@
+1)First Download Android studio if running on emulator or download sdk from android
+2)Download appium server (npm -g install appium) //npm is a package manager to download packages such as appium,node.js etc
+3)Set 'ANDROID_HOME' in system variables= C:\Users\kasun.herath\AppData\Local\Android\Sdk
+4)Set platform_tools ,tools,tools/bin in system variables 'Path' (If tools not found go to android sdk manager and untick hiden packaegs and install tools package)
+5)Launch an emulator
+6)Create a maven test
+7)Write a test as below (below is java snippet to launch calculator)
+
+
+package appiumtests;
+
+
+import java.net.URL;
+
+import org.openqa.selenium.remote.DesiredCapabilities;
+
+import io.appium.java_client.AppiumDriver;
+import io.appium.java_client.MobileElement;
+
+public class CalculatorTest {
+	
+	static AppiumDriver<MobileElement> driver; //use webdriver for launching browser on device
+
+	public static void main(String[] args) throws Exception {
+		// TODO Auto-generated method stub
+		
+		openCal();
+
+	}
+
+	public static void openCal() throws Exception {
+		
+		DesiredCapabilities cap = new DesiredCapabilities();
+		//cap.setCapability("automationName", "UiAutomator2");(not important)
+		cap.setCapability("deviceName", "Android Emulator");
+		cap.setCapability("udid", "emulator-5554"); // emulator id is taken by executing command -> adb devices
+		cap.setCapability("platformName", "Android");
+		cap.setCapability("platformVersion", "10.0");
+		cap.setCapability("appPackage", "com.google.android.calculator");
+		cap.setCapability("appActivity", "com.android.calculator2.Calculator");//Double check for the simple and capital letters
+		
+		URL url = new URL("http://0.0.0.0:4723/wd/hub");
+		driver = new AppiumDriver<MobileElement>(url,cap);
+		
+		System.out.println("Application Started ....");
+		
+		
+	}
+}
+
+8)Then install apk info and search calculator where it shows appPackage and appActivity
+9)Launch Appium from appliation or from cmd -> appium
+10)Then run test
+
+
+
+------Interacting with calculator through finidng element through appium----------
+
+1)Launch appium and give the capabilities as in the code above and run
+2)The calculator window will be shown through appium and capture the elements through appium element inspection according to calculation desired (Xpath will be more accurate)
+		
+		--------
+		previous code
+		--------
+
+		System.out.println("Application Started ....");
+		
+		
+		MobileElement dig1 = driver.findElement(By.xpath("/hierarchy/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.view.ViewGroup/android.widget.LinearLayout/androidx.slidingpanelayout.widget.SlidingPaneLayout/android.widget.LinearLayout/android.view.ViewGroup[1]/android.widget.Button[7]"));
+		MobileElement oper = driver.findElement(By.xpath("//android.widget.Button[@content-desc=\"plus\"]"));
+		MobileElement dig2 = driver.findElement(By.xpath("/hierarchy/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.view.ViewGroup/android.widget.LinearLayout/androidx.slidingpanelayout.widget.SlidingPaneLayout/android.widget.LinearLayout/android.view.ViewGroup[1]/android.widget.Button[5]"));
+		MobileElement equal = driver.findElement(By.xpath("//android.widget.Button[@content-desc=\"equals\"]"));
+		MobileElement result = driver.findElement(By.xpath("/hierarchy/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.view.ViewGroup/android.widget.LinearLayout/android.widget.LinearLayout/android.widget.FrameLayout[1]/android.widget.TextView"));
+		
+		//WebDriverWait wait = new WebDriverWait(driver, 7000);
+		//wait.until(ExpectedConditions.visibilityOf(dig1));
+		dig1.click();
+		WebDriverWait wait2 = new WebDriverWait(driver, 5000);
+		wait2.until(ExpectedConditions.visibilityOf(oper));
+		oper.click();
+		WebDriverWait wait3 = new WebDriverWait(driver, 10000);
+		wait3.until(ExpectedConditions.visibilityOf(dig2));
+		dig2.click();
+		WebDriverWait wait4 = new WebDriverWait(driver, 10000);
+		wait4.until(ExpectedConditions.visibilityOf(equal));
+		equal.click();
+		
+		WebDriverWait wait5 = new WebDriverWait(driver, 12000);
+		wait5.until(ExpectedConditions.visibilityOf(result));
+		String res = result.getText();
+		
+		System.out.println("Result is "+res);
+		
+		System.out.println("Calculation Completed ....");
+		
+	}
+}
+
+3)Run as Java application
+
+------------------- Using UIAutomator to capture elements-----------------
+Advantage is snapshots can be saved for later use without connecting the device
+
+1)launch uiautomator.bat in following path - C:\Users\kasun.herath\AppData\Local\Android\Sdk\tools\bin
+2)Connect mobile device
+3)There are two options as device ss and device ss compressed
+4)Select one and choose the device from drop down and select OK then itll be shown in uiautomator(dropdown appear when multiple devies are connected)
+5)Later also ss can be open through uiautnator with the required 2 files 
+
+
+---------------Running Tests  with cable------
+1)Connect the device and enable usb debugging in mobile settings
+2)run adb devices
+3)use the device id shown for the capability code *udid*
+4)Run appium server
+5)Run the test
+
+
+---------------Running Tests through wifi without cable------
+1)Both the device and pc should be conected to same network
+2)First find the ip adress of phone and mark down
+3)Connect device over usb first then run adb tcpip 5555 allow pop up on phone screen and then connect to the ip adress (This should be done for the evry first time if it shows unauthrize kill and start server, if running the 2nd time or more continue with 4th step)
+4)Then run command -> adb tcpip 5555(if 5555 is busy use another port or any error comes try killing server and starting again if still error happens go straight to next step with ip adress)
+5)Then connect your device using the ip adress:5555 (Eg - adb connect 192.168.1.4:5555)
+6)If any error comes run adb kill-server and adb start-server and re run the above command
+7)After that check your device from abd devices if it says unauthorized then kill the server and start the server and re run from the step 1.
+8)Replace the ip adress to your appium code or selenium code where udid is present
+
+------Steps as in stackoverflow
+stay connect via USB
+
+connect to your WIFI network (computer and mobile device both)
+
+ping DeviceIP (must be have ping to your device)
+
+adb kill-server
+
+adb usb
+
+adb tcpip 5555
+
+unplug usb cable (as per @captain_majid 's comment)
+adb connect yourDeviceIP
+
+adb devices (must be see two device names , one of them is by deviceIP)
+
+unplug USB cable
+
+
+
+
+---------------------------------------Appium Studio ------------------------------
+
+Download appium studio and install 
+Launch app
+Connect device over usb
+Add a device(Device will be auto recognized)
+All the apps will be shown
+Select and app Eg - Chrome
+New Test - > Start Recording(Device UI will be shown in appium studio)
+Chrome will open . do the necessary interactions in chrome and click on stop
+All the code will be populated and the java code is also shown below
+
+
+
+--------------------------------Appium Mobile Automation Framework------------------
+
+1)Same as previous selenium wedriver framework create a maven project
+2)Create two folders as tests and pages under src/test/java and apps under src/test/resources (Use is .apk file is stored here in testing native apps)
+3)On test folder create the baseclass.java with following code -:
+
+package tests;
+
+
+import java.net.URL;
+
+import org.openqa.selenium.remote.DesiredCapabilities;
+import org.testng.annotations.AfterTest;
+import org.testng.annotations.BeforeTest;
+import org.testng.annotations.Test;
+
+import io.appium.java_client.AppiumDriver;
+import io.appium.java_client.MobileElement;
+import io.appium.java_client.remote.MobileCapabilityType;
+
+public class BaseClass {
+
+	AppiumDriver driver;//Appium Driver declclared maybe have to declare as *AppiumDriver<MobileElement> driver;* when interaction with elements 
+
+	@BeforeTest//Always make sure testng annotations are imported from the dropdown 
+	public void setUp() {
+		try {
+
+			DesiredCapabilities cap = new DesiredCapabilities();
+			cap.setCapability(MobileCapabilityType.PLATFORM_NAME, "ANDROID");//Either Capability/MobileCapabilityType can be used ; advanatge of MobileCapabilityType is its drop down shows the values as platfrom version , name etc)
+			cap.setCapability(MobileCapabilityType.PLATFORM_VERSION, "6.0");
+			cap.setCapability(MobileCapabilityType.DEVICE_NAME, "MYA-L22");
+			cap.setCapability(MobileCapabilityType.UDID, "R9KBB18109219830");
+			cap.setCapability(MobileCapabilityType.NEW_COMMAND_TIMEOUT, 60);
+			cap.setCapability(MobileCapabilityType.BROWSER_NAME, "chrome");
+
+			URL url = new URL("http://0.0.0.0:4723/wd/hub");
+			driver = new AppiumDriver<MobileElement>(url, cap);
+
+		} catch (Exception exp) {
+			System.out.println("Cause is " + exp.getCause());
+			System.out.println("Message is " + exp.getMessage());
+			exp.printStackTrace();
+		}
+	}
+
+	@Test
+	public void sampleTest() {
+		System.out.println("Inside the tests");
+	}
+
+	@AfterTest
+	public void tearDown() {
+
+	}
+
+}
+
+4)Start appium server
+5)Run as testng or maven test as declared below
+
+
+Extra----
+Profiling can also be done by including following snippet after </dependencies>
+
+<profiles>
+		<profile>
+			<id>Profile1</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-surefire-plugin</artifactId>
+						<version>2.19.1</version>
+						<configuration>
+							<includes>
+								<include>**/*BaseClass*</include>
+							</includes>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+		</profiles>
+
+i)After setting profiles like this only we van run test from command prompt as below 
+	i)cd to framework folder
+	ii)run following command -> mvn test -P <profile name>
+This was also done in first selenium framework developed
+--------
+
+6)Now create test class and extend the class to base class and write the desired test as example below:-
+
+package tests;
+
+import static org.testng.Assert.assertEquals;
+
+import org.openqa.selenium.By;
+import org.openqa.selenium.Keys;
+import org.testng.annotations.Test;
+
+
+public class Tests extends BaseClass{
+	
+	@Test
+	public void test1() {
+		driver.get("https://www.google.com/");
+		driver.findElement(By.xpath("//input[@name='q']")).sendKeys("Automation");
+		driver.findElement(By.xpath("//input[@name='q']")).sendKeys(Keys.ENTER);
+		String title =driver.getTitle();
+		String expected = "Automation - Google Search";
+		assertEquals(title, expected);
+		
+		System.out.println("Test one Completed ");
+	}
+	
+	
+
+}
+
+
+
+
+
+
+
+
+
